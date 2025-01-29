@@ -45,16 +45,14 @@ body {
   font-weight: 500;
 }
 */
-.tech-icon {
-  color: var(--primary-color);
-}
 
-.hero-buttons {
+
+/* .hero-buttons {
   display: flex;
   gap: 1.5rem;
   color: #BE123C;
 
-}
+} */
 
 
 /* Buttons */
@@ -93,14 +91,6 @@ body {
   padding: 8rem 0;
 }
 
-.section-title {
-  font-size: 3rem;
-  margin-bottom: 4rem;
-  text-align: center;
-  color: var(--text-color);
-  position: relative;
-}
-
 .section-title::after {
   content: '';
   position: absolute;
@@ -119,32 +109,11 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .hero-title {
-    font-size: 3rem;
-  }
 
-  .hero-description {
-    font-size: 1.2rem;
-  }
 
-  .section-title {
-    font-size: 2.5rem;
-  }
-
-  .container {
-    padding: 0 1.5rem;
-  }
 
   .projects-grid {
     grid-template-columns: 1fr;
   }
 
-  .hero-buttons {
-    flex-direction: column;
-  }
-
-  .btn {
-    width: 100%;
-    text-align: center;
-  }
 }
