@@ -93,7 +93,13 @@
     }
 
     .skill-card {
+        min-height: auto;
         padding: 1.5rem;
+        flex-grow: 1;
+    }
+    .skill-card:hover {
+        transform: none;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     }
     .skill-title {
         font-size: 1.3rem;
@@ -122,4 +128,5 @@
         width: 20px;
         height: 20px;
     }
+    
 }
