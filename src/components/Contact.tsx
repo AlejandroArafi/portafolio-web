@@ -22,28 +22,51 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Manejar el envío del formulario
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { name, email, message } = formData;
 
+    // Validar que todos los campos estén llenos
     if (name === "" || email === "" || message === "") {
-      alert("Todos los campos son obligatorios");
-    } else {
-      toast.success("Mensaje enviado correctamente");
+      toast.error("Todos los campos son obligatorios");
+      return;
+    }
 
-      //se resetea el formulario
-      setFormData({
-        name: "",
-        email: "",
-        message: "",
+    try {
+      // Enviar los datos al backend
+      const response = await fetch("http://localhost:3001/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
+
+      const result = await response.json();
+
+      // Manejar la respuesta del backend
+      if (result.success) {
+        toast.success("Mensaje enviado correctamente");
+        // Resetear el formulario
+        setFormData({
+          name: "",
+          email: "",
+          message: "",
+        });
+      } else {
+        toast.error("Hubo un error al enviar el mensaje");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Hubo un error al enviar el mensaje");
     }
   };
 
   return (
     <section id="contacto" className="section">
       <div className="container">
-        
+        {/* Componente Toaster para mostrar notificaciones */}
         <Toaster position="top-right" reverseOrder={false} />
 
         <h2 className="section-title">Contacto</h2>
@@ -53,6 +76,7 @@ const Contact = () => {
               href="https://github.com/AlejandroArafi"
               className="social-link"
               target="_blank"
+              rel="noopener noreferrer"
             >
               <Github size={28} />
             </a>
@@ -60,6 +84,7 @@ const Contact = () => {
               href="https://www.linkedin.com/in/alejandroarafi/"
               className="social-link"
               target="_blank"
+              rel="noopener noreferrer"
             >
               <Linkedin size={28} />
             </a>
@@ -93,7 +118,11 @@ const Contact = () => {
               onChange={handleChange}
             ></textarea>
 
-            <button className="btn btn-primary" style={{ width: "100%" }}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ width: "100%" }}
+            >
               Enviar Mensaje
             </button>
           </form>
