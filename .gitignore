@@ -40,3 +40,4 @@ ehthumbs.db
 # Optional
 coverage/
 .nyc_output/
+.vercel

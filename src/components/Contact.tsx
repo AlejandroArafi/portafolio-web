@@ -4,72 +4,82 @@ import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
 const Contact = () => {
-  // Estado para los valores del formulario
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Manejar cambios en los inputs
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Manejar el envío del formulario
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { name, email, message } = formData;
 
-    // Validar que todos los campos estén llenos
-    if (name === "" || email === "" || message === "") {
+    if (!name || !email || !message) {
       toast.error("Todos los campos son obligatorios");
       return;
     }
 
+    if (!validateEmail(email)) {
+      toast.error("Por favor ingresa un email válido");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      // Enviar los datos al backend
-     const response = await fetch("/api/send-email", {
-       method: "POST",
-       headers: {
-         "Content-Type": "application/json",
-       },
-       body: JSON.stringify(formData),
-     });
+      // URL condicional para desarrollo/producción
+      const apiUrl = import.meta.env.DEV
+        ? "http://localhost:3000/api/send-email"
+        : "/api/send-email";
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error en la solicitud");
+      }
 
       const result = await response.json();
 
-      // Manejar la respuesta del backend
       if (result.success) {
         toast.success("Mensaje enviado correctamente");
-        // Resetear el formulario
-        setFormData({
-          name: "",
-          email: "",
-          message: "",
-        });
-      } else {
-        toast.error("Hubo un error al enviar el mensaje");
+        setFormData({ name: "", email: "", message: "" });
       }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Hubo un error al enviar el mensaje");
+      console.error("Error completo:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Hubo un error al enviar el mensaje"
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <section id="contacto" className="section">
       <div className="container">
-        {/* Componente Toaster para mostrar notificaciones */}
         <Toaster position="top-right" reverseOrder={false} />
-
         <h2 className="section-title">Contacto</h2>
+
         <div className="contact-form">
           <div className="social-links">
             <a
@@ -88,10 +98,18 @@ const Contact = () => {
             >
               <Linkedin size={28} />
             </a>
-            <a href="#" className="social-link">
+            <a
+              href="#contacto"
+              className="social-link"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = "mailto:alejandro.arafi@gmail.com";
+              }}
+            >
               <Mail size={28} />
             </a>
           </div>
+
           <form onSubmit={handleSubmit}>
             <input
               type="text"
@@ -100,6 +118,8 @@ const Contact = () => {
               className="form-input"
               value={formData.name}
               onChange={handleChange}
+              disabled={isLoading}
+              aria-label="Nombre"
             />
             <input
               type="email"
@@ -108,6 +128,8 @@ const Contact = () => {
               className="form-input"
               value={formData.email}
               onChange={handleChange}
+              disabled={isLoading}
+              aria-label="Email"
             />
             <textarea
               name="message"
@@ -116,14 +138,19 @@ const Contact = () => {
               className="form-input"
               value={formData.message}
               onChange={handleChange}
+              disabled={isLoading}
+              aria-label="Mensaje"
+              maxLength={1000}
             ></textarea>
 
             <button
               type="submit"
               className="btn btn-primary"
               style={{ width: "100%" }}
+              disabled={isLoading}
+              aria-busy={isLoading}
             >
-              Enviar Mensaje
+              {isLoading ? "Enviando..." : "Enviar Mensaje"}
             </button>
           </form>
         </div>
