@@ -4,7 +4,6 @@ import nodemailer from "nodemailer";
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Configurar headers
   res.setHeader("Content-Type", "application/json");
-  res.setHeader("Access-Control-Allow-Origin", "*"); // Permitir CORS
 
   try {
     // Validar método HTTP
@@ -22,23 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .json({ success: false, error: "Faltan campos requeridos" });
     }
 
-    // Validar formato del email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Formato de email inválido" });
-    }
-
-    // Validar longitud del mensaje
-    if (message.length > 1000) {
-      return res.status(400).json({
-        success: false,
-        error: "El mensaje no puede exceder los 1000 caracteres",
-      });
-    }
-
-    // Configurar transporte de Nodemailer
+    // Configurar transporte
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -47,42 +30,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     });
 
-    // Configurar el correo
-    const mailOptions = {
+    // Enviar email
+    await transporter.sendMail({
       from: `"${name}" <${email}>`,
       to: process.env.EMAIL_USER as string,
       subject: `Nuevo mensaje de ${name}`,
       text: message,
-      html: `
-        <h1>Nuevo mensaje de ${name}</h1>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Mensaje:</strong></p>
-        <p>${message}</p>
-      `,
-    };
-
-    // Enviar el correo
-    const info = await transporter.sendMail(mailOptions);
+      html: `<p>${message}</p>`,
+    });
 
     // Respuesta exitosa
-    res.status(200).json({
-      success: true,
-      messageId: info.messageId,
-    });
+    res.status(200).json({ success: true });
   } catch (error) {
-    // Log detallado del error
     console.error("Error completo:", error);
-
-    // Manejo seguro de errores
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Error desconocido al enviar el mensaje";
-
-    // Respuesta de error
     res.status(500).json({
       success: false,
-      error: errorMessage,
+      error: error instanceof Error ? error.message : "Error desconocido",
     });
   }
 }
