@@ -35,13 +35,15 @@ const Contact = () => {
 
     try {
       // Enviar los datos al backend
-      const response = await fetch("http://localhost:3001/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        "https://portafolio-pink-xi.vercel.app/send-email",{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const result = await response.json();
 
