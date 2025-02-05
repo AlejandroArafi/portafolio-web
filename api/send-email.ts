@@ -21,7 +21,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .json({ success: false, error: "Faltan campos requeridos" });
     }
 
-    // Configurar transporte
+    // Validar formato del email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Formato de email inválido" });
+    }
+
+    // Configurar transporte de Nodemailer
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -30,22 +38,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     });
 
-    // Enviar email
-    await transporter.sendMail({
+    // Configurar el correo
+    const mailOptions = {
       from: `"${name}" <${email}>`,
       to: process.env.EMAIL_USER as string,
       subject: `Nuevo mensaje de ${name}`,
       text: message,
       html: `<p>${message}</p>`,
-    });
+    };
+
+    // Enviar el correo
+    const info = await transporter.sendMail(mailOptions);
 
     // Respuesta exitosa
-    res.status(200).json({ success: true });
+    res.status(200).json({ success: true, messageId: info.messageId });
   } catch (error) {
     console.error("Error completo:", error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Error desconocido",
-    });
+
+    // Manejo seguro de errores
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Error desconocido al enviar el mensaje";
+
+    // Respuesta de error en JSON
+    res.status(500).json({ success: false, error: errorMessage });
   }
 }
