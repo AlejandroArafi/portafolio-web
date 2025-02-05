@@ -36,7 +36,7 @@ const Contact = () => {
     try {
       // Enviar los datos al backend
       const response = await fetch(
-        "https://portafolio-pink-xi.vercel.app/send-email",{
+        "https://portafolio-299cmmxti-alejandroarafis-projects.vercel.app/send-email",{
           method: "POST",
           headers: {
             "Content-Type": "application/json",
