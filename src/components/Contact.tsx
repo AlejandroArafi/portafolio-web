@@ -50,12 +50,18 @@ const Contact = () => {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Error en la solicitud");
+      // Verificar si la respuesta es JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        throw new Error(text || "Error en la solicitud");
       }
 
       const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Error en la solicitud");
+      }
 
       if (result.success) {
         toast.success("Mensaje enviado correctamente");
