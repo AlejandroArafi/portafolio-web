@@ -21,9 +21,7 @@ const Contact = () => {
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  };const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { name, email, message } = formData;
 
@@ -40,7 +38,6 @@ const Contact = () => {
     setIsLoading(true);
 
     try {
-      // URL condicional para desarrollo/producción
       const apiUrl = import.meta.env.DEV
         ? "http://localhost:3000/api/send-email" // Para desarrollo local
         : "https://portafolio-pink-xi.vercel.app/api/send-email"; // Para producción en Vercel
@@ -52,7 +49,12 @@ const Contact = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (jsonError) {
+          errorData = { error: await response.text() };
+        }
         throw new Error(errorData.error || "Error en la solicitud");
       }
 
@@ -67,7 +69,7 @@ const Contact = () => {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Hubo un error al enviar el mensaje"
+          : "No se pudo conectar al servidor. Inténtalo de nuevo más tarde."
       );
     } finally {
       setIsLoading(false);
