@@ -21,7 +21,9 @@ const Contact = () => {
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
-  };const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { name, email, message } = formData;
 
@@ -49,12 +51,7 @@ const Contact = () => {
       });
 
       if (!response.ok) {
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch (jsonError) {
-          errorData = { error: await response.text() };
-        }
+        const errorData = await response.json();
         throw new Error(errorData.error || "Error en la solicitud");
       }
 
