@@ -13,36 +13,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method !== "POST") {
-      return res
-        .status(405)
-        .json({ success: false, error: "Método no permitido" });
+      return res.status(405).json({ success: false, error: "Método no permitido" });
     }
 
     const { name, email, message } = req.body;
     if (!name || !email || !message) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Faltan campos requeridos" });
+      return res.status(400).json({ success: false, error: "Faltan campos requeridos" });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Formato de email inválido" });
+      return res.status(400).json({ success: false, error: "Formato de email inválido" });
     }
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER as string,
-        pass: process.env.EMAIL_PASS as string,
+        user: process.env.VITE_EMAIL_USER as string,
+        pass: process.env.VITE_EMAIL_PASS as string,
       },
     });
 
     const mailOptions = {
       from: `"${name}" <${email}>`,
-      to: process.env.EMAIL_USER as string,
+      to: process.env.VITE_EMAIL_USER as string,
       subject: `Nuevo mensaje de ${name}`,
       text: message,
       html: `<p>${message}</p>`,
