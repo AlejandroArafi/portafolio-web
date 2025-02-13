@@ -42,8 +42,8 @@ const Contact = () => {
     try {
       // URL condicional para desarrollo/producción
       const apiUrl = import.meta.env.DEV
-        ? "http://localhost:3000/api/send-email"
-        : "/api/send-email";
+        ? "http://localhost:3000/api/send-email" // Para desarrollo local
+        : "https://portafolio-pink-xi.vercel.app/api/send-email"; // Para producción en Vercel
 
       const response = await fetch(apiUrl, {
         method: "POST",
