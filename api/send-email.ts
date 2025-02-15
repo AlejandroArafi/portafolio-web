@@ -47,15 +47,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: process.env.VITE_EMAIL_USER as string,
-          pass: process.env.VITE_EMAIL_PASS as string,
+          user: process.env.EMAIL_USER as string,
+          pass: process.env.EMAIL_PASS as string,
         },
       });
 
       // Configurar el correo
       const mailOptions = {
         from: `"${name}" <${email}>`,
-        to: process.env.VITE_EMAIL_USER as string,
+        to: process.env.EMAIL_USER as string,
         subject: `Nuevo mensaje de ${name}`,
         text: message,
         html: `<p>${message}</p>`,
