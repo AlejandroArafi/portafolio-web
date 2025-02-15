@@ -1,82 +1,34 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import nodemailer from "nodemailer";
-import cors from "cors";
+import sgMail from "@sendgrid/mail";
 
-// Middleware CORS
-const corsMiddleware = cors({
-  origin: "*", // Permite todas las solicitudes (cambia esto en producción)
-  methods: ["POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
-});
+sgMail.setApiKey(process.env.SENDGRID_API_KEY as string); // Asegúrate de tener la variable de entorno configurada
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Aplicar CORS
-  corsMiddleware(req, res, async () => {
-    // Configurar headers
-    res.setHeader("Content-Type", "application/json");
+export default async (req: VercelRequest, res: VercelResponse) => {
+  if (req.method === "POST") {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res
+        .status(400)
+        .json({ error: "Todos los campos son obligatorios" });
+    }
+
+    const msg = {
+      to: "tu_correo@dominio.com", // Cambia esto por tu dirección de correo
+      from: email,
+      subject: `Nuevo mensaje de ${name}`,
+      text: message,
+      html: `<p>${message}</p>`,
+    };
 
     try {
-      // Validar método HTTP
-      if (req.method === "OPTIONS") {
-        return res.status(200).end();
-      }
-
-      if (req.method !== "POST") {
-        return res
-          .status(405)
-          .json({ success: false, error: "Método no permitido" });
-      }
-
-      // Validar campos del body
-      const { name, email, message } = req.body;
-      if (!name || !email || !message) {
-        return res
-          .status(400)
-          .json({ success: false, error: "Faltan campos requeridos" });
-      }
-
-      // Validar formato del email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return res
-          .status(400)
-          .json({ success: false, error: "Formato de email inválido" });
-      }
-
-      // Configurar transporte de Nodemailer
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER as string,
-          pass: process.env.EMAIL_PASS as string,
-        },
-      });
-
-      // Configurar el correo
-      const mailOptions = {
-        from: `"${name}" <${email}>`,
-        to: process.env.EMAIL_USER as string,
-        subject: `Nuevo mensaje de ${name}`,
-        text: message,
-        html: `<p>${message}</p>`,
-      };
-
-      // Enviar el correo
-      const info = await transporter.sendMail(mailOptions);
-
-      // Respuesta exitosa
-      res.status(200).json({ success: true, messageId: info.messageId });
+      await sgMail.send(msg);
+      return res.status(200).json({ success: true });
     } catch (error) {
-      console.error("Error completo:", error);
-
-      // Manejo seguro de errores
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Error desconocido al enviar el mensaje";
-
-      // Respuesta de error en JSON
-      res.status(500).json({ success: false, error: errorMessage });
+      console.error(error);
+      return res.status(500).json({ error: "Error al enviar el mensaje" });
     }
-  });
-}
+  } else {
+    res.status(405).json({ error: "Método no permitido" });
+  }
+};
