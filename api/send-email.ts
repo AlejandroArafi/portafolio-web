@@ -1,9 +1,18 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import sgMail from "@sendgrid/mail";
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY as string); // Asegúrate de tener la variable de entorno configurada
+sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
 
 export default async (req: VercelRequest, res: VercelResponse) => {
+  res.setHeader("Access-Control-Allow-Origin", "*"); // Permite cualquier origen
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS"); // Métodos permitidos
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // Manejar preflight request (CORS)
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method === "POST") {
     const { name, email, message } = req.body;
 
@@ -14,7 +23,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     }
 
     const msg = {
-      to: "tu_correo@dominio.com", // Cambia esto por tu dirección de correo
+      to: "alejandro.arafi@gmail.com", // Cambia esto por tu dirección de correo
       from: email,
       subject: `Nuevo mensaje de ${name}`,
       text: message,
@@ -29,6 +38,6 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       return res.status(500).json({ error: "Error al enviar el mensaje" });
     }
   } else {
-    res.status(405).json({ error: "Método no permitido" });
+    return res.status(405).json({ error: "Método no permitido" });
   }
 };
