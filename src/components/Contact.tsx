@@ -11,6 +11,7 @@ const Contact = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // Manejar cambios en los campos del formulario
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -18,20 +19,24 @@ const Contact = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Validar el formato del email
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
   };
 
+  // Manejar el envío del formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { name, email, message } = formData;
 
+    // Validar campos obligatorios
     if (!name || !email || !message) {
       toast.error("Todos los campos son obligatorios");
       return;
     }
 
+    // Validar el formato del email
     if (!validateEmail(email)) {
       toast.error("Por favor ingresa un email válido");
       return;
@@ -40,10 +45,12 @@ const Contact = () => {
     setIsLoading(true);
 
     try {
+      // Configurar la URL de la API según el entorno
       const apiUrl = import.meta.env.DEV
         ? "http://localhost:3000/api/send-email" // Para desarrollo local
         : "https://portafolio-pink-xi.vercel.app/api/send-email"; // Para producción en Vercel
 
+      // Enviar la solicitud al backend
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -59,10 +66,12 @@ const Contact = () => {
 
       const result = await response.json();
 
+      // Manejar errores de la respuesta
       if (!response.ok) {
         throw new Error(result.error || "Error en la solicitud");
       }
 
+      // Mostrar mensaje de éxito y resetear el formulario
       if (result.success) {
         toast.success("Mensaje enviado correctamente");
         setFormData({ name: "", email: "", message: "" });
